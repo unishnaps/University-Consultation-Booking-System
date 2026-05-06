@@ -1,17 +1,190 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Login - Consultation System</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Login | Academic Portal</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-dim": "#d9dadb",
+                        "primary-container": "#003366",
+                        "secondary-fixed-dim": "#e9c349",
+                        "surface-container": "#edeeef",
+                        "on-tertiary-container": "#9b9c9c",
+                        "on-surface": "#191c1d",
+                        "error": "#ba1a1a",
+                        "primary-fixed-dim": "#a7c8ff",
+                        "inverse-surface": "#2e3132",
+                        "primary-fixed": "#d5e3ff",
+                        "secondary-container": "#fed65b",
+                        "outline-variant": "#c3c6d1",
+                        "tertiary-fixed-dim": "#c6c6c7",
+                        "on-secondary": "#ffffff",
+                        "on-tertiary-fixed-variant": "#454747",
+                        "on-secondary-fixed-variant": "#574500",
+                        "inverse-on-surface": "#f0f1f2",
+                        "surface-container-high": "#e7e8e9",
+                        "surface-bright": "#f8f9fa",
+                        "inverse-primary": "#a7c8ff",
+                        "error-container": "#ffdad6",
+                        "surface": "#f8f9fa",
+                        "on-primary-container": "#799dd6",
+                        "on-error": "#ffffff",
+                        "surface-container-low": "#f3f4f5",
+                        "on-error-container": "#93000a",
+                        "background": "#f8f9fa",
+                        "surface-container-highest": "#e1e3e4",
+                        "on-tertiary-fixed": "#1a1c1c",
+                        "surface-container-lowest": "#ffffff",
+                        "tertiary-fixed": "#e2e2e2",
+                        "outline": "#737780",
+                        "on-surface-variant": "#43474f",
+                        "tertiary": "#1d1f1f",
+                        "on-background": "#191c1d",
+                        "surface-variant": "#e1e3e4",
+                        "surface-tint": "#3a5f94",
+                        "on-secondary-container": "#745c00",
+                        "secondary": "#735c00",
+                        "on-tertiary": "#ffffff",
+                        "secondary-fixed": "#ffe088",
+                        "on-secondary-fixed": "#241a00",
+                        "primary": "#001e40",
+                        "on-primary-fixed": "#001b3c",
+                        "on-primary-fixed-variant": "#1f477b",
+                        "on-primary": "#ffffff",
+                        "tertiary-container": "#323434"
+                    },
+                    "spacing": {
+                        "base": "4px",
+                        "xl": "3rem",
+                        "xs": "0.5rem",
+                        "md": "1.5rem",
+                        "sm": "1rem",
+                        "lg": "2rem"
+                    },
+                    "fontFamily": {
+                        "h3": ["Inter"], "button": ["Inter"], "h1": ["Inter"], "h2": ["Inter"], "label-sm": ["Inter"], "body-lg": ["Inter"], "body-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "h3": ["1.25rem", {"lineHeight": "1.4", "fontWeight": "600"}],
+                        "button": ["0.875rem", {"lineHeight": "1", "fontWeight": "600"}],
+                        "h1": ["2.5rem", {"lineHeight": "1.2", "fontWeight": "700"}],
+                        "h2": ["1.75rem", {"lineHeight": "1.3", "fontWeight": "600"}],
+                        "label-sm": ["0.875rem", {"lineHeight": "1.2", "fontWeight": "500"}],
+                        "body-lg": ["1.125rem", {"lineHeight": "1.6", "fontWeight": "400"}],
+                        "body-md": ["1rem", {"lineHeight": "1.5", "fontWeight": "400"}]
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .auth-card-shadow { box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.05); }
+    </style>
 </head>
-<body>
-    <div class="login-container">
-        <h2>University Booking Login</h2>
-        <form action="/login" method="post">
-            <input type="text" name="username" placeholder="Username" required>
-            <input type="password" name="password" placeholder="Password" required>
-            <button type="submit">Login</button>
-        </form>
+<body class="bg-surface font-body-md text-on-surface min-h-screen flex items-center justify-center p-md">
+    <div class="max-w-[1000px] w-full grid grid-cols-1 md:grid-cols-2 bg-surface-container-lowest border border-outline-variant overflow-hidden rounded-xl auth-card-shadow">
+        
+        <div class="hidden md:flex flex-col justify-between p-xl bg-primary-container relative overflow-hidden">
+            <div class="relative z-10">
+                <div class="flex items-center gap-xs mb-lg">
+                    <span class="material-symbols-outlined text-secondary-fixed text-[40px]">account_balance</span>
+                    <h1 class="font-h2 text-h2 text-on-primary">UniConsult</h1>
+                </div>
+                <h2 class="font-h1 text-h1 text-white mb-md leading-tight">Your Gateway to Academic Excellence.</h2>
+                <p class="font-body-lg text-primary-fixed opacity-90 max-w-sm">Securely book appointments with faculty, manage your consultation slots, and track your academic progress in one centralized portal.</p>
+            </div>
+            <div class="relative z-10 mt-xl">
+                <div class="flex items-center gap-sm">
+                    <div class="w-12 h-12 rounded-full border-2 border-secondary-fixed flex items-center justify-center overflow-hidden">
+                        <div class="w-full h-full bg-secondary-container"></div>
+                    </div>
+                    <div>
+                        <p class="font-label-sm text-on-primary">"The most efficient way to manage faculty hours."</p>
+                        <p class="font-label-sm text-secondary-fixed text-[12px]">Dean of Arts & Science</p>
+                    </div>
+                </div>
+            </div>
+            <div class="absolute -bottom-20 -right-20 w-80 h-80 bg-on-primary-fixed-variant opacity-20 rounded-full blur-3xl"></div>
+            <div class="absolute -top-10 -left-10 w-40 h-40 bg-secondary-container opacity-10 rounded-full blur-2xl"></div>
+        </div>
+
+        <div class="p-lg md:p-xl flex flex-col justify-center bg-white">
+            <div class="mb-lg">
+                <h3 class="font-h2 text-h2 text-primary mb-xs">Welcome Back</h3>
+                <p class="text-on-surface-variant font-body-md">Please enter your credentials to continue.</p>
+            </div>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    <div class="mb-md">
+                        {% for category, message in messages %}
+                            <div class="p-sm text-label-sm rounded 
+                                {% if category == 'error' %} bg-error-container text-on-error-container border border-error
+                                {% else %} bg-primary-fixed text-on-primary-fixed border border-primary-container {% endif %}">
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+
+            <form method="POST" action="{{ url_for('login') }}" class="space-y-md">
+                <div>
+                    <label class="block font-label-sm text-primary mb-xs" for="email">Email Address <span class="text-primary">*</span></label>
+                    <div class="relative">
+                        <span class="material-symbols-outlined absolute left-sm top-1/2 -translate-y-1/2 text-outline text-[20px]">mail</span>
+                        <input name="email" id="email" type="email" required placeholder="e.g. student@university.edu" 
+                               class="w-full pl-[44px] pr-sm py-sm border border-outline-variant rounded focus:ring-2 focus:ring-primary-container focus:border-primary-container transition-all outline-none"/>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="flex justify-between items-center mb-xs">
+                        <label class="block font-label-sm text-primary" for="password">Password <span class="text-primary">*</span></label>
+                    </div>
+                    <div class="relative">
+                        <span class="material-symbols-outlined absolute left-sm top-1/2 -translate-y-1/2 text-outline text-[20px]">lock</span>
+                        <input name="password" id="password" type="password" required placeholder="••••••••" 
+                               class="w-full pl-[44px] pr-sm py-sm border border-outline-variant rounded focus:ring-2 focus:ring-primary-container focus:border-primary-container transition-all outline-none"/>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-xs">
+                    <input class="w-4 h-4 text-primary-container border-outline-variant rounded focus:ring-primary-container" id="remember" type="checkbox"/>
+                    <label class="font-label-sm text-on-surface-variant" for="remember">Remember me for 30 days</label>
+                </div>
+
+                <button type="submit" class="w-full py-md bg-primary-container text-white font-button text-button rounded-lg shadow-sm hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-xs">
+                    Login to Portal
+                    <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+                </button>
+            </form>
+
+            <div class="mt-xl pt-lg border-t border-outline-variant text-center">
+                <p class="font-body-md text-on-surface-variant">
+                    Don't have an account? 
+                    <a href="{{ url_for('register') }}" class="text-primary-container font-button hover:underline cursor-pointer">Register here</a>
+                </p>
+            </div>
+
+            <div class="mt-md flex items-start gap-xs text-[11px] text-on-tertiary-container">
+                <span class="material-symbols-outlined text-[14px]">info</span>
+                <p>This portal uses high-contrast accessibility standards. For assistance, contact the University Help Desk.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="fixed top-0 left-0 w-full h-full -z-10 pointer-events-none overflow-hidden">
+        <div class="absolute top-[-10%] right-[-10%] w-[40%] h-[40%] bg-primary-fixed opacity-20 rounded-full blur-[120px]"></div>
+        <div class="absolute bottom-[-10%] left-[-10%] w-[30%] h-[30%] bg-secondary-fixed opacity-20 rounded-full blur-[100px]"></div>
     </div>
 </body>
 </html>
