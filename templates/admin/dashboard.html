@@ -1,1 +1,195 @@
+{% extends "base.html" %}
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block body %}
+<div class="app-layout">
+
+  {# ════════════════════ SIDEBAR ════════════════════ #}
+  <aside class="sidebar" id="admin-sidebar">
+    <div class="sidebar-brand">
+      <div class="sidebar-brand-icon">
+        <span class="material-symbols-outlined" style="font-size:20px;">school</span>
+      </div>
+      <div class="sidebar-brand-text">
+        <div class="name">UniConsult</div>
+        <div class="sub">Faculty of Arts &amp; Science</div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a href="{{ url_for('admin_dashboard') }}" class="nav-item active">
+        <span class="material-symbols-outlined">dashboard</span> Dashboard
+      </a>
+      <a href="{{ url_for('manage_slots') }}" class="nav-item">
+        <span class="material-symbols-outlined">calendar_month</span> Manage Slots
+      </a>
+      <a href="{{ url_for('admin_requests') }}" class="nav-item">
+        <span class="material-symbols-outlined">event_note</span> Booking Requests
+        {% if summary.pending > 0 %}
+        <span class="badge badge-pending" style="margin-left:auto;">{{ summary.pending }}</span>
+        {% endif %}
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <a href="{{ url_for('manage_slots') }}" class="btn-book">
+        <span class="material-symbols-outlined" style="font-size:18px;">add</span> Add New Slot
+      </a>
+      <a href="{{ url_for('logout') }}" class="nav-item">
+        <span class="material-symbols-outlined">logout</span> Logout
+      </a>
+    </div>
+  </aside>
+
+  {# ════════════════════ MAIN ════════════════════ #}
+  <div class="main-content">
+
+    <header class="topbar">
+      <div class="topbar-title">Admin Management</div>
+      <div class="topbar-right">
+        <div class="search-box">
+          <span class="material-symbols-outlined" style="font-size:18px;color:var(--text-muted);">search</span>
+          <input type="text" placeholder="Search student or ID..."/>
+        </div>
+        <button class="icon-btn notif-badge">
+          <span class="material-symbols-outlined">notifications</span>
+          {% if summary.pending > 0 %}<span class="notif-dot"></span>{% endif %}
+        </button>
+        <div class="divider-v"></div>
+        <div class="user-chip">
+          <div class="avatar-text" style="background:var(--navy-light);">
+            {{ session.first_name[0] }}{{ session.last_name[0] }}
+          </div>
+          <span class="user-name">{{ session.first_name }} {{ session.last_name }}</span>
+        </div>
+      </div>
+    </header>
+
+    <div class="content-area">
+
+      {# Summary stat row #}
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1.5rem;">
+        {% for label, val, icon, color in [
+          ('Pending Requests', summary.pending, 'pending_actions', 'var(--pending-text)'),
+          ('Approved Bookings', summary.approved, 'check_circle', 'var(--approved-text)'),
+          ('Total Slots', summary.total_slots, 'calendar_month', 'var(--navy)'),
+          ('Registered Students', summary.total_students, 'group', 'var(--navy-light)'),
+        ] %}
+        <div class="card card-pad" style="border-top:3px solid {{ color }};">
+          <div style="display:flex;align-items:center;gap:0.75rem;">
+            <span class="material-symbols-outlined" style="font-size:28px;color:{{ color }};">{{ icon }}</span>
+            <div>
+              <div style="font-family:'DM Serif Display',serif;font-size:1.6rem;color:var(--navy);">{{ val }}</div>
+              <div style="font-size:0.75rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;">{{ label }}</div>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+
+      <div class="grid-12">
+
+        {# ── Master Booking Feed ── #}
+        <section class="col-8">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.75rem;">
+            <div class="section-title" style="margin:0;">
+              <span class="material-symbols-outlined">pending_actions</span> Master Booking Feed
+            </div>
+            <span class="badge badge-pending">{{ summary.pending }} Pending</span>
+          </div>
+          <div class="card">
+            {% if pending_bookings %}
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Student</th>
+                    <th>Consultation Topic</th>
+                    <th>Requested Slot</th>
+                    <th>Status</th>
+                    <th style="text-align:right;">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for b in pending_bookings %}
+                  <tr>
+                    <td>
+                      <div class="student-cell">
+                        <div class="student-avatar av-blue">{{ b.first_name[0] }}{{ b.last_name[0] }}</div>
+                        <div>
+                          <div class="student-name">{{ b.first_name }} {{ b.last_name }}</div>
+                          <div class="student-id">ID: {{ b.sid }}</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td>{{ b.topic }}</td>
+                    <td>
+                      <div>{{ b.date.strftime('%b %d, %Y') }}</div>
+                      <div style="font-size:0.75rem;color:var(--text-muted);">{{ b.start_time }} – {{ b.end_time }}</div>
+                    </td>
+                    <td><span class="badge badge-{{ b.status }}">{{ b.status|title }}</span></td>
+                    <td>
+                      <div class="action-btns">
+                        <form method="POST" action="{{ url_for('approve_booking', booking_id=b.id) }}" style="display:inline;">
+                          <button type="submit" class="btn-sm btn-approve">Approve</button>
+                        </form>
+                        <form method="POST" action="{{ url_for('reject_booking', booking_id=b.id) }}" style="display:inline;">
+                          <button type="submit" class="btn-sm btn-reject">Reject</button>
+                        </form>
+                      </div>
+                    </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+            <div class="table-footer">
+              <a href="{{ url_for('admin_requests') }}" class="link-btn">View All Requests →</a>
+            </div>
+            {% else %}
+            <div class="empty-state">
+              <span class="material-symbols-outlined">check_circle</span>
+              All caught up! No pending booking requests.
+            </div>
+            {% endif %}
+          </div>
+        </section>
+
+        {# ── Slot Manager ── #}
+        <aside class="col-4">
+          <div class="section-title" style="margin-bottom:0.75rem;">
+            <span class="material-symbols-outlined">schedule</span> Today's Slots
+          </div>
+          <div class="card card-pad">
+            {% if today_slots %}
+              {% for s in today_slots %}
+              <div class="slot-item">
+                <div>
+                  <div class="slot-time">{{ s.start_time }} – {{ s.end_time }}</div>
+                  <div class="slot-type">{{ s.slot_type }}</div>
+                </div>
+                <div style="font-size:0.75rem;color:var(--text-muted);">
+                  {{ s.booked_count }}/{{ s.capacity }}
+                </div>
+              </div>
+              {% endfor %}
+            {% else %}
+            <div class="empty-state" style="padding:1.5rem 0;">
+              <span class="material-symbols-outlined" style="font-size:32px;">event_busy</span>
+              No slots scheduled today.
+            </div>
+            {% endif %}
+            <div style="margin-top:1rem;">
+              <a href="{{ url_for('manage_slots') }}" class="btn-publish" style="display:block;text-align:center;text-decoration:none;">
+                Manage All Slots
+              </a>
+            </div>
+          </div>
+        </aside>
+
+      </div>{# /grid-12 #}
+    </div>{# /content-area #}
+  </div>{# /main-content #}
+</div>{# /app-layout #}
+{% endblock %}
 
