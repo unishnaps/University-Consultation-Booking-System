@@ -1,1 +1,292 @@
+{% extends "base.html" %}
+{% set view = view | default('dashboard') %}
+{% block title %}Student Portal{% endblock %}
 
+{% block body %}
+<div class="app-layout">
+
+  {# ════════════════════ SIDEBAR ════════════════════ #}
+  <aside class="sidebar" id="student-sidebar">
+    <div class="sidebar-brand">
+      <div class="sidebar-brand-icon">
+        <span class="material-symbols-outlined" style="font-size:20px;">school</span>
+      </div>
+      <div class="sidebar-brand-text">
+        <div class="name">UniConsult</div>
+        <div class="sub">Student Portal</div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a href="{{ url_for('student_dashboard') }}"
+         class="nav-item {% if view == 'dashboard' %}active{% endif %}">
+        <span class="material-symbols-outlined">dashboard</span> Dashboard
+      </a>
+      <a href="{{ url_for('student_slots') }}"
+         class="nav-item {% if view == 'slots' %}active{% endif %}">
+        <span class="material-symbols-outlined">calendar_month</span> Available Slots
+      </a>
+      <a href="{{ url_for('my_bookings') }}"
+         class="nav-item {% if view == 'bookings' %}active{% endif %}">
+        <span class="material-symbols-outlined">event_note</span> My Bookings
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <a href="{{ url_for('book_slot') }}" class="btn-book">
+        <span class="material-symbols-outlined" style="font-size:18px;">add</span> Book New Slot
+      </a>
+      <a href="{{ url_for('logout') }}" class="nav-item">
+        <span class="material-symbols-outlined">logout</span> Logout
+      </a>
+    </div>
+  </aside>
+
+  {# ════════════════════ MAIN CONTENT ════════════════════ #}
+  <div class="main-content">
+
+    {# Top bar #}
+    <header class="topbar">
+      <div class="topbar-title">
+        {% if view == 'dashboard' %}Student Dashboard
+        {% elif view == 'slots' %}Available Slots
+        {% elif view == 'bookings' %}My Bookings
+        {% else %}Student Portal{% endif %}
+      </div>
+      <div class="topbar-right">
+        <div class="search-box">
+          <span class="material-symbols-outlined" style="font-size:18px;color:var(--text-muted);">search</span>
+          <input type="text" placeholder="Search slots or topics..."/>
+        </div>
+        <button class="icon-btn notif-badge">
+          <span class="material-symbols-outlined">notifications</span>
+          {% if stats is defined and stats.unread_msgs > 0 %}
+          <span class="notif-dot"></span>
+          {% endif %}
+        </button>
+        <div class="divider-v"></div>
+        <div class="user-chip">
+          <div class="avatar-text" style="background:#1a4a7a;">
+            {{ session.first_name[0] }}{{ session.last_name[0] }}
+          </div>
+          <span class="user-name">{{ session.first_name }} {{ session.last_name }}</span>
+        </div>
+      </div>
+    </header>
+
+    <div class="content-area">
+
+      {# ════════ DASHBOARD VIEW ════════ #}
+      {% if view == 'dashboard' %}
+
+        {# Stat chips #}
+        <div class="stat-chips">
+          <div class="stat-chip">
+            <div class="stat-chip-label">Upcoming Bookings</div>
+            <div class="stat-chip-val">{{ stats.upcoming }}</div>
+            <div class="stat-chip-sub">
+              {% if upcoming %} Next: {{ upcoming[0].date.strftime('%b %d') }}, {{ upcoming[0].start_time }}{% else %}None scheduled{% endif %}
+            </div>
+          </div>
+          <div class="stat-chip">
+            <div class="stat-chip-label">Total Consultations</div>
+            <div class="stat-chip-val">{{ stats.total }}</div>
+            <div class="stat-chip-sub">All time bookings</div>
+          </div>
+          <div class="stat-chip">
+            <div class="stat-chip-label">Unread Messages</div>
+            <div class="stat-chip-val">{{ stats.unread_msgs }}</div>
+            <div class="stat-chip-sub">{% if stats.unread_msgs > 0 %}New from faculty{% else %}All read{% endif %}</div>
+          </div>
+        </div>
+
+        <div class="grid-12">
+          {# Recent bookings #}
+          <div class="col-8">
+            <div class="section-title">
+              <span class="material-symbols-outlined">event_note</span> My Upcoming Bookings
+            </div>
+            <div class="card">
+              {% if upcoming %}
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Topic</th>
+                      <th>Slot</th>
+                      <th>Status</th>
+                      <th style="text-align:right;">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for b in upcoming %}
+                    <tr>
+                      <td>{{ b.topic }}</td>
+                      <td>
+                        <div>{{ b.date.strftime('%b %d, %Y') }}</div>
+                        <div style="font-size:0.75rem;color:var(--text-muted);">{{ b.start_time }} – {{ b.end_time }}</div>
+                      </td>
+                      <td><span class="badge badge-{{ b.status }}">{{ b.status|title }}</span></td>
+                      <td>
+                        <div class="action-btns">
+                          {% if b.status == 'pending' %}
+                          <form method="POST" action="{{ url_for('cancel_booking', booking_id=b.id) }}">
+                            <button type="submit" class="btn-sm btn-cancel"
+                                    onclick="return confirm('Cancel this booking?')">Cancel</button>
+                          </form>
+                          {% else %}
+                          <span style="font-size:0.78rem;color:var(--text-muted);">—</span>
+                          {% endif %}
+                        </div>
+                      </td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+              <div class="table-footer">
+                <a href="{{ url_for('my_bookings') }}" class="link-btn">View All Bookings →</a>
+              </div>
+              {% else %}
+              <div class="empty-state">
+                <span class="material-symbols-outlined">event_busy</span>
+                No upcoming bookings.
+                <br/>
+                <a href="{{ url_for('book_slot') }}" class="link-btn" style="margin-top:0.5rem;display:inline-block;">Book a slot now →</a>
+              </div>
+              {% endif %}
+            </div>
+          </div>
+
+          {# Quick book #}
+          <div class="col-4">
+            <div class="section-title">
+              <span class="material-symbols-outlined">schedule</span> Quick Book
+            </div>
+            <div class="card card-pad">
+              <div style="font-size:0.8rem;font-weight:600;color:var(--text-muted);margin-bottom:0.75rem;">Next Available Slots</div>
+              {% if quick_slots %}
+                {% for s in quick_slots %}
+                <div class="slot-card" style="margin-bottom:0.75rem;">
+                  <div class="slot-card-time">{{ s.start_time }} – {{ s.end_time }}</div>
+                  <div class="slot-card-date">{{ s.date.strftime('%a, %b %d') }}</div>
+                  <div class="slot-card-type">{{ s.slot_type }}</div>
+                </div>
+                {% endfor %}
+                <a href="{{ url_for('book_slot') }}" class="btn-publish" style="display:flex;align-items:center;justify-content:center;gap:0.4rem;margin-top:0.75rem;text-decoration:none;">
+                  Book a Slot
+                </a>
+              {% else %}
+              <div class="empty-state" style="padding:1.5rem 0;">
+                <span class="material-symbols-outlined" style="font-size:32px;">event_busy</span>
+                No slots available.
+              </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+      {# ════════ AVAILABLE SLOTS VIEW ════════ #}
+      {% elif view == 'slots' %}
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
+          <div class="section-title" style="margin:0;">
+            <span class="material-symbols-outlined">calendar_month</span> Available Consultation Slots
+          </div>
+        </div>
+
+        {% if slots %}
+        <div class="slots-grid">
+          {% for s in slots %}
+          <div class="slot-card">
+            <div class="slot-card-time">{{ s.start_time }} – {{ s.end_time }}</div>
+            <div class="slot-card-date">{{ s.date.strftime('%a, %b %d, %Y') }}</div>
+            <div class="slot-card-type">{{ s.slot_type }}</div>
+            <div style="font-size:0.72rem;color:var(--text-muted);margin-top:0.4rem;">
+              {{ s.available }} seat(s) left
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        <div style="margin-top:1.25rem;">
+          <a href="{{ url_for('book_slot') }}" class="btn-primary" style="width:auto;padding:0.65rem 2rem;display:inline-flex;text-decoration:none;">
+            Book a Slot →
+          </a>
+        </div>
+        {% else %}
+        <div class="card">
+          <div class="empty-state">
+            <span class="material-symbols-outlined">event_busy</span>
+            No consultation slots are currently available. Check back soon.
+          </div>
+        </div>
+        {% endif %}
+
+      {# ════════ MY BOOKINGS VIEW ════════ #}
+      {% elif view == 'bookings' %}
+        <div class="section-title">
+          <span class="material-symbols-outlined">event_note</span> My Bookings
+        </div>
+
+        {% if bookings %}
+        <div class="card">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Topic / Notes</th>
+                  <th>Slot</th>
+                  <th>Submitted</th>
+                  <th>Status</th>
+                  <th style="text-align:right;">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for b in bookings %}
+                <tr>
+                  <td>
+                    <div style="font-weight:600;">{{ b.topic }}</div>
+                    {% if b.notes %}
+                    <div style="font-size:0.75rem;color:var(--text-muted);">{{ b.notes[:60] }}{% if b.notes|length > 60 %}…{% endif %}</div>
+                    {% endif %}
+                  </td>
+                  <td>
+                    <div>{{ b.date.strftime('%b %d, %Y') }}</div>
+                    <div style="font-size:0.75rem;color:var(--text-muted);">{{ b.start_time }} – {{ b.end_time }}</div>
+                  </td>
+                  <td>{{ b.submitted_at.strftime('%b %d') }}</td>
+                  <td><span class="badge badge-{{ b.status }}">{{ b.status|title }}</span></td>
+                  <td>
+                    <div class="action-btns">
+                      {% if b.status == 'pending' %}
+                      <form method="POST" action="{{ url_for('cancel_booking', booking_id=b.id) }}">
+                        <button type="submit" class="btn-sm btn-cancel"
+                                onclick="return confirm('Cancel this booking?')">Cancel</button>
+                      </form>
+                      {% else %}
+                      <span style="font-size:0.78rem;color:var(--text-muted);">—</span>
+                      {% endif %}
+                    </div>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+        {% else %}
+        <div class="card">
+          <div class="empty-state">
+            <span class="material-symbols-outlined">event_note</span>
+            You have no bookings yet.
+            <br/>
+            <a href="{{ url_for('book_slot') }}" class="link-btn" style="margin-top:0.5rem;display:inline-block;">Book your first slot →</a>
+          </div>
+        </div>
+        {% endif %}
+
+      {% endif %}
+
+    </div>{# /content-area #}
+  </div>{# /main-content #}
+</div>{# /app-layout #}
+{% endblock %}
