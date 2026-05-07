@@ -1,1 +1,166 @@
+{% extends "base.html" %}
+{% block title %}Manage Slots{% endblock %}
+
+{% block body %}
+<div class="app-layout">
+
+  {# ════════ SIDEBAR ════════ #}
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="sidebar-brand-icon">
+        <span class="material-symbols-outlined" style="font-size:20px;">school</span>
+      </div>
+      <div class="sidebar-brand-text">
+        <div class="name">UniConsult</div>
+        <div class="sub">Faculty of Arts &amp; Science</div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="{{ url_for('admin_dashboard') }}" class="nav-item">
+        <span class="material-symbols-outlined">dashboard</span> Dashboard
+      </a>
+      <a href="{{ url_for('manage_slots') }}" class="nav-item active">
+        <span class="material-symbols-outlined">calendar_month</span> Manage Slots
+      </a>
+      <a href="{{ url_for('admin_requests') }}" class="nav-item">
+        <span class="material-symbols-outlined">event_note</span> Booking Requests
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <a href="{{ url_for('logout') }}" class="nav-item">
+        <span class="material-symbols-outlined">logout</span> Logout
+      </a>
+    </div>
+  </aside>
+
+  {# ════════ MAIN ════════ #}
+  <div class="main-content">
+    <header class="topbar">
+      <div class="topbar-title">Manage Consultation Slots</div>
+      <div class="topbar-right">
+        <div class="user-chip">
+          <div class="avatar-text" style="background:var(--navy-light);">
+            {{ session.first_name[0] }}{{ session.last_name[0] }}
+          </div>
+          <span class="user-name">{{ session.first_name }} {{ session.last_name }}</span>
+        </div>
+      </div>
+    </header>
+
+    <div class="content-area">
+
+      {# ── Add New Slot Form ── #}
+      <div class="card card-pad" style="max-width:700px;margin-bottom:1.5rem;">
+        <div class="section-title" style="margin-bottom:1rem;">
+          <span class="material-symbols-outlined">add_circle</span> Add New Slot
+        </div>
+        <form method="POST" action="{{ url_for('add_slot') }}">
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;">
+            <div class="form-group">
+              <div class="form-label"><span>Date</span></div>
+              <input type="date" name="date" class="form-control" required/>
+            </div>
+            <div class="form-group">
+              <div class="form-label"><span>Start Time</span></div>
+              <input type="time" name="start_time" class="form-control" required/>
+            </div>
+            <div class="form-group">
+              <div class="form-label"><span>End Time</span></div>
+              <input type="time" name="end_time" class="form-control" required/>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:2fr 1fr;gap:1rem;">
+            <div class="form-group">
+              <div class="form-label"><span>Slot Type</span></div>
+              <select name="slot_type" class="form-control">
+                {% for t in ['General Advising','Thesis Supervision','Project Oversight','Exam Queries','Research Guidance','Late Submission Appeal'] %}
+                <option>{{ t }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="form-group">
+              <div class="form-label"><span>Capacity</span></div>
+              <input type="number" name="capacity" class="form-control" value="1" min="1" max="20" required/>
+            </div>
+          </div>
+          <button type="submit" class="btn-publish" style="width:auto;padding:0.65rem 2rem;">
+            Publish Slot
+          </button>
+        </form>
+      </div>
+
+      {# ── Slots Table ── #}
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.75rem;">
+        <div class="section-title" style="margin:0;">
+          <span class="material-symbols-outlined">calendar_month</span> All Slots
+        </div>
+      </div>
+      <div class="card">
+        {% if slots %}
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Time</th>
+                <th>Type</th>
+                <th>Capacity</th>
+                <th>Booked</th>
+                <th>Status</th>
+                <th style="text-align:right;">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for s in slots %}
+              {% set is_full = s.booked_count >= s.capacity %}
+              <tr>
+                <td>{{ s.date.strftime('%a, %b %d, %Y') }}</td>
+                <td>{{ s.start_time }} – {{ s.end_time }}</td>
+                <td>{{ s.slot_type }}</td>
+                <td>{{ s.capacity }}</td>
+                <td>{{ s.booked_count }}</td>
+                <td>
+                  {% if is_full %}
+                  <span class="badge badge-full">Full</span>
+                  {% else %}
+                  <span class="badge badge-approved">Available</span>
+                  {% endif %}
+                </td>
+                <td>
+                  <div class="action-btns">
+                    <form method="POST" action="{{ url_for('delete_slot', slot_id=s.id) }}"
+                          onsubmit="event.preventDefault(); openDeleteModal(this);">
+                      <button type="submit" class="btn-sm btn-reject">Delete</button>
+                    </form>
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+          <span class="material-symbols-outlined">event_busy</span>
+          No consultation slots created yet. Add one above.
+        </div>
+        {% endif %}
+      </div>
+
+    </div>
+  </div>
+</div>
+
+{# Delete Confirmation Modal #}
+<div class="modal-overlay" id="delete-modal">
+  <div class="modal">
+    <h3>Delete Slot</h3>
+    <p>Are you sure you want to delete this consultation slot? This action cannot be undone and any pending bookings will be cancelled.</p>
+    <div class="modal-btns">
+      <button class="btn-outline" onclick="closeDeleteModal()">Cancel</button>
+      <button class="btn-danger" onclick="confirmDelete()">Delete Slot</button>
+    </div>
+  </div>
+</div>
+{% endblock %}
 
