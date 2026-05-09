@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+{% block title %}Booking Requests{% endblock %}
+
+{% block body %}
+<div class="app-layout">
+
+  {# ════════ SIDEBAR ════════ #}
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="sidebar-brand-icon">
+        <span class="material-symbols-outlined" style="font-size:20px;">school</span>
+      </div>
+      <div class="sidebar-brand-text">
+        <div class="name">UniConsult</div>
+        <div class="sub">Faculty of Arts &amp; Science</div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="{{ url_for('admin_dashboard') }}" class="nav-item">
+        <span class="material-symbols-outlined">dashboard</span> Dashboard
+      </a>
+      <a href="{{ url_for('manage_slots') }}" class="nav-item">
+        <span class="material-symbols-outlined">calendar_month</span> Manage Slots
+      </a>
+      <a href="{{ url_for('admin_requests') }}" class="nav-item active">
+        <span class="material-symbols-outlined">event_note</span> Booking Requests
+        {% if counts.pending > 0 %}
+        <span class="badge badge-pending" style="margin-left:auto;">{{ counts.pending }}</span>
+        {% endif %}
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <a href="{{ url_for('logout') }}" class="nav-item">
+        <span class="material-symbols-outlined">logout</span> Logout
+      </a>
+    </div>
+  </aside>
+
+  {# ════════ MAIN ════════ #}
+  <div class="main-content">
+    <header class="topbar">
+      <div class="topbar-title">Booking Requests</div>
+      <div class="topbar-right">
+        <div class="search-box">
+          <span class="material-symbols-outlined" style="font-size:18px;color:var(--text-muted);">search</span>
+          <input type="text" placeholder="Search student or topic..."/>
+        </div>
+        <div class="divider-v"></div>
+        <div class="user-chip">
+          <div class="avatar-text" style="background:var(--navy-light);">
+            {{ session.first_name[0] }}{{ session.last_name[0] }}
+          </div>
+          <span class="user-name">{{ session.first_name }} {{ session.last_name }}</span>
+        </div>
+      </div>
+    </header>
+
+    <div class="content-area">
+
+      {# Status filter + count badges #}
+      <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+  {% for label, key in [('All','all'),('Pending','pending'),('Approved','approved'),('Rejected','rejected')] %}
+    <a href="{{ url_for('admin_requests', status=key) }}"
+       class="badge"
+       style="padding:0.4rem 0.85rem; text-decoration:none; cursor:pointer;
+       {% if current_filter == key %}
+          background:var(--navy); color:var(--white);
+       {% elif key == 'pending' %}
+          background:var(--pending-bg); color:var(--pending-text);
+       {% elif key == 'approved' %}
+          background:var(--approved-bg); color:var(--approved-text);
+       {% elif key == 'rejected' %}
+          background:var(--rejected-bg); color:var(--rejected-text);
+       {% else %}
+          background:#e8edf4; color:var(--navy);
+       {% endif %}">
+      {{ label }}{% if key != 'all' %} ({{ counts[key] }}){% endif %}
+    </a>
+  {% endfor %}
+</div>
+
+      <div class="card">
+        {% if bookings %}
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Student</th>
+                <th>Topic</th>
+                <th>Slot</th>
+                <th>Submitted</th>
+                <th>Status</th>
+                <th style="text-align:right;">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% set av_colors = ['av-blue','av-gold','av-gray','av-green','av-pink'] %}
+              {% for b in bookings %}
+              <tr>
+                <td>
+                  <div class="student-cell">
+                    <div class="student-avatar {{ av_colors[loop.index0 % 5] }}">
+                      {{ b.first_name[0] }}{{ b.last_name[0] }}
+                    </div>
+                    <div>
+                      <div class="student-name">{{ b.first_name }} {{ b.last_name }}</div>
+                      <div class="student-id">ID: {{ b.sid }}</div>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <div>{{ b.topic }}</div>
+                  {% if b.notes %}
+                  <div style="font-size:0.72rem;color:var(--text-muted);">{{ b.notes[:50] }}…</div>
+                  {% endif %}
+                </td>
+                <td>
+                  <div>{{ b.date.strftime('%b %d, %Y') }}</div>
+                  <div style="font-size:0.75rem;color:var(--text-muted);">{{ b.start_time }} – {{ b.end_time }}</div>
+                </td>
+                <td>{{ b.submitted_at.strftime('%b %d') }}</td>
+                <td><span class="badge badge-{{ b.status }}">{{ b.status|title }}</span></td>
+                <td>
+                  <div class="action-btns">
+                    {% if b.status == 'pending' %}
+                    <form method="POST" action="{{ url_for('approve_booking', booking_id=b.id) }}" style="display:inline;">
+                      <button type="submit" class="btn-sm btn-approve">Approve</button>
+                    </form>
+                    <form method="POST" action="{{ url_for('reject_booking', booking_id=b.id) }}" style="display:inline;">
+                      <button type="submit" class="btn-sm btn-reject">Reject</button>
+                    </form>
+                    {% else %}
+                    <span style="font-size:0.78rem;color:var(--text-muted);">{{ b.status|title }}</span>
+                    {% endif %}
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+          <span class="material-symbols-outlined">inbox</span>
+          No booking requests found{% if current_filter != 'all' %} with status "{{ current_filter }}"{% endif %}.
+        </div>
+        {% endif %}
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endblock %}
