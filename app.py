@@ -19,8 +19,8 @@ app.secret_key = app.config['SECRET_KEY']
 def get_db():
     """Open a new MySQL connection for the current request."""
     
-    print("DB USER:", app.config['MYSQL_USER'])
-    print("DB PASSWORD:", app.config['MYSQL_PASSWORD'])
+    # print("DB USER:", app.config['MYSQL_USER'])
+    # print("DB PASSWORD:", app.config['MYSQL_PASSWORD'])
     return mysql.connector.connect(
         host=app.config['MYSQL_HOST'],
         user=app.config['MYSQL_USER'],
