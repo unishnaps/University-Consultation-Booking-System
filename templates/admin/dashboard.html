@@ -2,6 +2,17 @@
 {% block title %}Admin Dashboard{% endblock %}
 
 {% block body %}
+<style>
+  #addAdminModal {
+    display: none;
+  }
+  #addAdminModal.active {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+  }
+</style>
+
 <div class="app-layout">
 
   {# ════════════════════ SIDEBAR ════════════════════ #}
@@ -67,7 +78,17 @@
 
     <div class="content-area">
 
-      {# Summary stat row #}
+      {# --- Action Row: Add New Admin Button --- #}
+      <div style="display: flex; justify-content: flex-end; margin-bottom: 1rem;">
+        <button onclick="document.getElementById('addAdminModal').classList.add('active')" 
+                class="btn-book" 
+                style="background: var(--navy); color: #fff; border: 1px solid var(--gold); padding: 0.6rem 1.2rem; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; transition: all 0.2s ease;">
+          <span class="material-symbols-outlined" style="font-size:20px;">person_add</span>
+          <strong>Add New Admin</strong>
+        </button>
+      </div>
+
+      {# Summary stat row (The 4 boxes) #}
       <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1.5rem;">
         {% for label, val, icon, color in [
           ('Pending Requests', summary.pending, 'pending_actions', 'var(--pending-text)'),
@@ -88,7 +109,6 @@
       </div>
 
       <div class="grid-12">
-
         {# ── Master Booking Feed ── #}
         <section class="col-8">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.75rem;">
@@ -143,9 +163,6 @@
                 </tbody>
               </table>
             </div>
-            <div class="table-footer">
-              <a href="{{ url_for('admin_requests') }}" class="link-btn">View All Requests →</a>
-            </div>
             {% else %}
             <div class="empty-state">
               <span class="material-symbols-outlined">check_circle</span>
@@ -155,7 +172,7 @@
           </div>
         </section>
 
-        {# ── Slot Manager ── #}
+        {# ── Today's Slots ── #}
         <aside class="col-4">
           <div class="section-title" style="margin-bottom:0.75rem;">
             <span class="material-symbols-outlined">schedule</span> Today's Slots
@@ -180,16 +197,75 @@
             </div>
             {% endif %}
             <div style="margin-top:1rem;">
-              <a href="{{ url_for('manage_slots') }}" class="btn-publish" style="display:block;text-align:center;text-decoration:none;">
+              <a href="{{ url_for('manage_slots') }}" class="btn-publish" style="display:flex; justify-content:center; text-decoration:none;">
                 Manage All Slots
               </a>
             </div>
           </div>
         </aside>
+      </div>
+    </div>
+  </div>
 
-      </div>{# /grid-12 #}
-    </div>{# /content-area #}
-  </div>{# /main-content #}
-</div>{# /app-layout #}
+  {# ════════════════════ ADD ADMIN MODAL (CENTERED) ════════════════════ #}
+  <div id="addAdminModal" 
+       class="modal" 
+       style="position:fixed; z-index:10000; inset:0; width:100vw; height:100vh; background-color:rgba(0,0,0,0.6); backdrop-filter:blur(4px);">
+    <div class="modal-content card" 
+         style="background-color:#fff; padding:2rem; width:90%; max-width:480px; border-radius:12px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);">
+
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
+        <div style="display:flex; align-items:center; gap:0.75rem; color:var(--navy);">
+          <span class="material-symbols-outlined" style="font-size:2rem;">admin_panel_settings</span>
+          <h3 style="margin:0; font-family:'DM Serif Display',serif; font-size:1.6rem;">Register New Admin</h3>
+        </div>
+        <button onclick="document.getElementById('addAdminModal').classList.remove('active')" 
+                style="background:none; border:none; cursor:pointer; font-size:2rem; color:var(--text-muted);">&times;</button>
+      </div>
+
+      <form method="POST" action="{{ url_for('register_admin') }}">
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:1rem;">
+          <div>
+            <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600; color:var(--navy);">First Name</label>
+            <input type="text" name="first_name" required style="width:100%; padding:0.7rem; border:1px solid #ddd; border-radius:6px; box-sizing:border-box;">
+          </div>
+          <div>
+            <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600; color:var(--navy);">Last Name</label>
+            <input type="text" name="last_name" required style="width:100%; padding:0.7rem; border:1px solid #ddd; border-radius:6px; box-sizing:border-box;">
+          </div>
+        </div>
+
+        <div style="margin-bottom:1rem;">
+          <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600; color:var(--navy);">Email Address</label>
+          <input type="email" name="email" required style="width:100%; padding:0.7rem; border:1px solid #ddd; border-radius:6px; box-sizing:border-box;">
+        </div>
+
+        <div style="margin-bottom:1rem;">
+          <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600; color:var(--navy);">Password</label>
+          <input type="password" name="password" required style="width:100%; padding:0.7rem; border:1px solid #ddd; border-radius:6px; box-sizing:border-box;">
+        </div>
+
+        <div style="margin-bottom:2rem;">
+          <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600; color:var(--navy);">Confirm Password</label>
+          <input type="password" name="confirm_password" required style="width:100%; padding:0.7rem; border:1px solid #ddd; border-radius:6px; box-sizing:border-box;">
+        </div>
+
+        <button type="submit" class="btn-publish" style="width:100%; justify-content:center; padding:0.8rem; font-weight:bold; font-size:1rem;">
+          Create Admin Account
+        </button>
+      </form>
+    </div>
+  </div>
+
+</div>
+
+{# ── Close modal when clicking the backdrop ── #}
+<script>
+  document.getElementById('addAdminModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+      this.classList.remove('active');
+    }
+  });
+</script>
+
 {% endblock %}
-

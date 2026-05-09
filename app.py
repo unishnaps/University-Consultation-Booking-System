@@ -362,6 +362,46 @@ def admin_dashboard():
                            today_slots=today_slots,
                            summary=summary)
 
+@app.route('/admin/register_admin', methods=['POST'])
+@login_required
+@admin_required
+def register_admin():
+    first_name  = request.form.get('first_name', '').strip()
+    last_name   = request.form.get('last_name', '').strip()
+    email       = request.form.get('email', '').strip()
+    password    = request.form.get('password', '')
+    confirm_pw  = request.form.get('confirm_password', '')
+
+    # Basic Validation
+    if not all([first_name, last_name, email, password]):
+        flash('All fields are required to register an admin.', 'danger')
+        return redirect(url_for('admin_dashboard'))
+
+    if password != confirm_pw:
+        flash('Passwords do not match.', 'danger')
+        return redirect(url_for('admin_dashboard'))
+
+    if len(password) < 6:
+        flash('Password must be at least 6 characters.', 'danger')
+        return redirect(url_for('admin_dashboard'))
+
+    # Check if user already exists
+    existing = query_db('SELECT id FROM users WHERE email = %s', (email,), one=True)
+    if existing:
+        flash('An account with this email already exists.', 'danger')
+        return redirect(url_for('admin_dashboard'))
+
+    # Hash password and insert as admin with NULL student_id
+    pw_hash = generate_password_hash(password)
+    query_db(
+        '''INSERT INTO users (first_name, last_name, student_id, email, password_hash, role)
+           VALUES (%s, %s, NULL, %s, %s, 'admin')''',
+        (first_name, last_name, email, pw_hash),
+        commit=True
+    )
+    
+    flash(f'Admin {first_name} {last_name} registered successfully!', 'success')
+    return redirect(url_for('admin_dashboard'))
 
 @app.route('/admin/slots', methods=['GET'])
 @login_required
