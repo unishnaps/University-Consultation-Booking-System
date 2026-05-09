@@ -1,10 +1,6 @@
--- UniConsult Database Schema
--- Run this script to initialise the MySQL database
-
 CREATE DATABASE IF NOT EXISTS uniconsult_db;
 USE uniconsult_db;
 
--- ─── USERS TABLE ────────────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS users (
     id INT AUTO_INCREMENT PRIMARY KEY,
     first_name VARCHAR(100) NOT NULL,
@@ -16,7 +12,6 @@ CREATE TABLE IF NOT EXISTS users (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- ─── CONSULTATION SLOTS TABLE ────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS slots (
     id INT AUTO_INCREMENT PRIMARY KEY,
     date DATE NOT NULL,
@@ -30,7 +25,6 @@ CREATE TABLE IF NOT EXISTS slots (
     FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL
 );
 
--- ─── BOOKINGS TABLE ──────────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS bookings (
     id INT AUTO_INCREMENT PRIMARY KEY,
     student_id INT NOT NULL,
@@ -44,7 +38,6 @@ CREATE TABLE IF NOT EXISTS bookings (
     FOREIGN KEY (slot_id) REFERENCES slots(id) ON DELETE CASCADE
 );
 
--- ─── MESSAGES TABLE ──────────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS messages (
     id INT AUTO_INCREMENT PRIMARY KEY,
     sender_id INT NOT NULL,
