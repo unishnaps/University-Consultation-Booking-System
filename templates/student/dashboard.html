@@ -253,7 +253,7 @@
                     <div>{{ b.date.strftime('%b %d, %Y') }}</div>
                     <div style="font-size:0.75rem;color:var(--text-muted);">{{ b.start_time }} – {{ b.end_time }}</div>
                   </td>
-                  {% comment %} <td>{{ b.submitted_at.strftime('%b %d') }}</td> {% endcomment %}
+                  {# <td>{{ b.submitted_at.strftime('%b %d') }}</td> #}
                   <td>
     {% if b.submitted_at %}
         {{ b.submitted_at.strftime('%b %d') }}
