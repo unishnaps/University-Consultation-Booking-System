@@ -115,10 +115,22 @@
                   {% endif %}
                 </td>
                 <td>
-                  <div>{{ b.date.strftime('%b %d, %Y') }}</div>
+                  <div>
+                    {% if b.date %}
+                      {{ b.date.strftime('%b %d, %Y') }}
+                    {% else %}
+                      Date Pending
+                    {% endif %}
+                  </div>
                   <div style="font-size:0.75rem;color:var(--text-muted);">{{ b.start_time }} – {{ b.end_time }}</div>
                 </td>
-                <td>{{ b.submitted_at.strftime('%b %d') }}</td>
+                <td>
+                  {% if b.submitted_at %}
+                    {{ b.submitted_at.strftime('%b %d') }}
+                  {% else %}
+                    Not Recorded
+                  {% endif %}
+                </td>
                 <td><span class="badge badge-{{ b.status }}">{{ b.status|title }}</span></td>
                 <td>
                   <div class="action-btns">
